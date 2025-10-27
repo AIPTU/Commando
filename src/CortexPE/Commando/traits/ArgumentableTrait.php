@@ -29,7 +29,6 @@ declare(strict_types=1);
 
 namespace CortexPE\Commando\traits;
 
-
 use CortexPE\Commando\args\BaseArgument;
 use CortexPE\Commando\args\TextArgument;
 use CortexPE\Commando\BaseCommand;
@@ -43,6 +42,7 @@ use function is_array;
 use function rtrim;
 use function trim;
 use function usort;
+use const PHP_INT_MAX;
 
 trait ArgumentableTrait{
 	/** @var BaseArgument[][] */
@@ -56,12 +56,9 @@ trait ArgumentableTrait{
 	abstract protected function prepare() : void;
 
 	/**
-	 * @param int          $position
-	 * @param BaseArgument $argument
-	 *
 	 * @throws ArgumentOrderException
 	 */
-	public function registerArgument(int $position, BaseArgument $argument): void {
+	public function registerArgument(int $position, BaseArgument $argument) : void {
 		if($position < 0) {
 			throw new ArgumentOrderException("You cannot register arguments at negative positions");
 		}
@@ -82,7 +79,7 @@ trait ArgumentableTrait{
 		}
 	}
 
-	public function parseArguments(array $rawArgs, CommandSender $sender): array {
+	public function parseArguments(array $rawArgs, CommandSender $sender) : array {
 		$return = [
 			"arguments" => [],
 			"errors" => []
@@ -100,7 +97,7 @@ trait ArgumentableTrait{
 		if(count($rawArgs) > 0) {
 			foreach($this->argumentList as $pos => $possibleArguments) {
 				// try the one that spans more first... before the others
-				usort($possibleArguments, function (BaseArgument $a): int {
+				usort($possibleArguments, function (BaseArgument $a) : int {
 					if($a->getSpanLength() === PHP_INT_MAX) { // if it takes unlimited arguments, pull it down
 						return 1;
 					}
@@ -141,7 +138,7 @@ trait ArgumentableTrait{
 					$expectedArgs = $this->argumentList[$argOffset];
 					$expected = "";
 					foreach($expectedArgs as $expectedArg){
-						$expected .=  $expectedArg->getTypeName() . "|";
+						$expected .= $expectedArg->getTypeName() . "|";
 					}
 
 					$return["errors"][] = [
@@ -190,9 +187,9 @@ trait ArgumentableTrait{
 		return $return;
 	}
 
-	public function generateUsageMessage(string $parent = ""): string {
+	public function generateUsageMessage(string $parent = "") : string {
 		$name = $parent . (empty($parent) ? "" : " ") . $this->getName();
-		$msg = TextFormat::RED .  "/" . $name;
+		$msg = TextFormat::RED . "/" . $name;
 		$args = [];
 		foreach($this->argumentList as $arguments){
 			$hasOptional = false;
@@ -210,7 +207,7 @@ trait ArgumentableTrait{
 				$args[] = "<" . $names . ">";
 			}
 		}
-		$msg .= ((empty($args)) ? "" : " ") .  implode(TextFormat::RED . " ", $args) . ": " . $this->getDescription();
+		$msg .= ((empty($args)) ? "" : " ") . implode(TextFormat::RED . " ", $args) . ": " . $this->getDescription();
 		foreach($this->subCommands as $label => $subCommand){
 			if($label === $subCommand->getName()){
 				$msg .= "\n - " . $subCommand->generateUsageMessage($name);
@@ -220,11 +217,11 @@ trait ArgumentableTrait{
 		return trim($msg);
 	}
 
-	public function hasArguments(): bool {
+	public function hasArguments() : bool {
 		return !empty($this->argumentList);
 	}
 
-	public function hasRequiredArguments(): bool {
+	public function hasRequiredArguments() : bool {
 		foreach($this->argumentList as $arguments) {
 			foreach($arguments as $argument) {
 				if(!$argument->isOptional()) {
@@ -239,7 +236,7 @@ trait ArgumentableTrait{
 	/**
 	 * @return BaseArgument[][]
 	 */
-	public function getArgumentList(): array {
+	public function getArgumentList() : array {
 		return $this->argumentList;
 	}
 }

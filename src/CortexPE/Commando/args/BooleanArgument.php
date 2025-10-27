@@ -29,7 +29,6 @@ declare(strict_types=1);
 
 namespace CortexPE\Commando\args;
 
-
 use pocketmine\command\CommandSender;
 
 class BooleanArgument extends StringEnumArgument {
@@ -39,15 +38,15 @@ class BooleanArgument extends StringEnumArgument {
 		"false" => false,
 	];
 
-	public function getTypeName(): string {
+	public function getTypeName() : string {
 		return "bool";
 	}
 
-	public function getEnumName(): string {
+	public function getEnumName() : string {
 		return "bool";
 	}
 
-	public function parse(string $argument, CommandSender $sender): bool{
+	public function parse(string $argument, CommandSender $sender) : bool{
 		return (bool) $this->getValue($argument);
 	}
 }
