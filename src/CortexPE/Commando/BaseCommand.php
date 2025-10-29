@@ -56,7 +56,7 @@ abstract class BaseCommand extends Command implements IArgumentable, IRunnable, 
 	public const ERR_NO_ARGUMENTS = 0x04;
 	public const ERR_INVALID_ARGUMENTS = 0x05;
 
-	/** @var array<string> */
+	/** @var array<int, string> */
 	protected array $errorMessages = [
 		self::ERR_INVALID_ARG_VALUE => TextFormat::RED . "Invalid value '{value}' for argument #{position}. Expecting: {expected}.",
 		self::ERR_TOO_MANY_ARGUMENTS => TextFormat::RED . 'Too many arguments given.',
@@ -67,10 +67,10 @@ abstract class BaseCommand extends Command implements IArgumentable, IRunnable, 
 
 	protected CommandSender $currentSender;
 
-	/** @var array<BaseSubCommand> */
+	/** @var array<string, BaseSubCommand> */
 	private array $subCommands = [];
 
-	/** @var array<BaseConstraint> */
+	/** @var array<int, BaseConstraint> */
 	private array $constraints = [];
 
 	protected Plugin $plugin;
@@ -102,8 +102,11 @@ abstract class BaseCommand extends Command implements IArgumentable, IRunnable, 
 		/** @var BaseCommand|BaseSubCommand $cmd */
 		$cmd = $this;
 		$passArgs = [];
-		if (count($args) > 0) {
-			if (isset($this->subCommands[$label = $args[0]])) {
+		$argsCount = count($args);
+
+		if ($argsCount > 0) {
+			$label = $args[0];
+			if (isset($this->subCommands[$label])) {
 				array_shift($args);
 				$this->subCommands[$label]->execute($sender, $label, $args);
 				return;
@@ -116,10 +119,13 @@ abstract class BaseCommand extends Command implements IArgumentable, IRunnable, 
 		}
 
 		if ($passArgs !== null) {
-			foreach ($cmd->getConstraints() as $constraint) {
-				if (!$constraint->test($sender, $commandLabel, $passArgs)) {
-					$constraint->onFailure($sender, $commandLabel, $passArgs);
-					return;
+			$constraints = $cmd->getConstraints();
+			if (count($constraints) > 0) {
+				foreach ($constraints as $constraint) {
+					if (!$constraint->test($sender, $commandLabel, $passArgs)) {
+						$constraint->onFailure($sender, $commandLabel, $passArgs);
+						return;
+					}
 				}
 			}
 
@@ -132,7 +138,9 @@ abstract class BaseCommand extends Command implements IArgumentable, IRunnable, 
 	 */
 	private function attemptArgumentParsing($ctx, array $args) : ?array {
 		$dat = $ctx->parseArguments($args, $this->currentSender);
-		if (!empty($errors = $dat['errors'])) {
+		$errors = $dat['errors'];
+
+		if (count($errors) > 0) {
 			foreach ($errors as $error) {
 				$this->sendError($error['code'], $error['data']);
 			}
@@ -150,9 +158,12 @@ abstract class BaseCommand extends Command implements IArgumentable, IRunnable, 
 	}
 
 	public function sendError(int $errorCode, array $args = []) : void {
-		$str = (string) $this->errorMessages[$errorCode];
-		foreach ($args as $item => $value) {
-			$str = str_replace('{' . $item . '}', (string) $value, $str);
+		$str = $this->errorMessages[$errorCode];
+
+		if (count($args) > 0) {
+			foreach ($args as $item => $value) {
+				$str = str_replace('{' . $item . '}', (string) $value, $str);
+			}
 		}
 
 		$this->currentSender->sendMessage($str);
@@ -177,18 +188,19 @@ abstract class BaseCommand extends Command implements IArgumentable, IRunnable, 
 		$keys = $subCommand->getAliases();
 		array_unshift($keys, $subCommand->getName());
 		$keys = array_unique($keys);
+
 		foreach ($keys as $key) {
-			if (!isset($this->subCommands[$key])) {
-				$subCommand->setParent($this);
-				$this->subCommands[$key] = $subCommand;
-			} else {
+			if (isset($this->subCommands[$key])) {
 				throw new InvalidArgumentException("SubCommand with same name / alias for '{$key}' already exists");
 			}
+
+			$subCommand->setParent($this);
+			$this->subCommands[$key] = $subCommand;
 		}
 	}
 
 	/**
-	 * @return array<BaseSubCommand>
+	 * @return array<string, BaseSubCommand>
 	 */
 	public function getSubCommands() : array {
 		return $this->subCommands;
@@ -199,7 +211,7 @@ abstract class BaseCommand extends Command implements IArgumentable, IRunnable, 
 	}
 
 	/**
-	 * @return array<BaseConstraint>
+	 * @return array<int, BaseConstraint>
 	 */
 	public function getConstraints() : array {
 		return $this->constraints;

@@ -72,17 +72,23 @@ class PacketHooker implements Listener {
 			$p = $target->getPlayer();
 			$disassembled = AvailableCommandsPacketDisassembler::disassemble($pk);
 			$commandDataList = $disassembled->commandData;
+
 			foreach ($commandDataList as $commandData) {
 				$cmd = Server::getInstance()->getCommandMap()->getCommand($commandData->getName());
-				if ($cmd instanceof BaseCommand) {
-					foreach ($cmd->getConstraints() as $constraint) {
+				if (!$cmd instanceof BaseCommand) {
+					continue;
+				}
+
+				$constraints = $cmd->getConstraints();
+				if (count($constraints) > 0) {
+					foreach ($constraints as $constraint) {
 						if (!$constraint->isVisibleTo($p)) {
 							continue 2;
 						}
 					}
-
-					$commandData->overloads = self::generateOverloads($p, $cmd);
 				}
+
+				$commandData->overloads = self::generateOverloads($p, $cmd);
 			}
 
 			self::$isIntercepting = true;
@@ -95,19 +101,22 @@ class PacketHooker implements Listener {
 	}
 
 	/**
-	 * @return array<array<CommandOverload>>
+	 * @return array<int, CommandOverload>
 	 */
 	private static function generateOverloads(CommandSender $cs, BaseCommand $command) : array {
 		$overloads = [];
 
 		foreach ($command->getSubCommands() as $label => $subCommand) {
-			if (!$subCommand->testPermissionSilent($cs) || $subCommand->getName() !== $label) { // hide aliases
+			if (!$subCommand->testPermissionSilent($cs) || $subCommand->getName() !== $label) {
 				continue;
 			}
 
-			foreach ($subCommand->getConstraints() as $constraint) {
-				if (!$constraint->isVisibleTo($cs)) {
-					continue 2;
+			$constraints = $subCommand->getConstraints();
+			if (count($constraints) > 0) {
+				foreach ($constraints as $constraint) {
+					if (!$constraint->isVisibleTo($cs)) {
+						continue 2;
+					}
 				}
 			}
 
@@ -117,8 +126,9 @@ class PacketHooker implements Listener {
 				0,
 				optional: false
 			);
+
 			$overloadList = self::generateOverloadList($subCommand);
-			if (!empty($overloadList)) {
+			if (count($overloadList) > 0) {
 				foreach ($overloadList as $overload) {
 					$overloads[] = new CommandOverload(false, [$scParam, ...$overload->getParameters()]);
 				}
@@ -135,20 +145,28 @@ class PacketHooker implements Listener {
 	}
 
 	/**
-	 * @return array<CommandOverload>
+	 * @return array<int, CommandOverload>
 	 */
 	private static function generateOverloadList(IArgumentable $argumentable) : array {
 		$input = $argumentable->getArgumentList();
+		$inputCount = count($input);
+
+		if ($inputCount === 0) {
+			return [];
+		}
+
 		$combinations = [];
 		$outputLength = array_product(array_map('count', $input));
 		$indexes = [];
+
 		foreach ($input as $k => $charList) {
 			$indexes[$k] = 0;
 		}
 
 		do {
-			/** @var array<CommandParameter> $set */
+			/** @var array<int, CommandParameter> $set */
 			$set = [];
+
 			foreach ($indexes as $k => $index) {
 				$param = $set[$k] = clone $input[$k][$index]->getNetworkParameterData();
 
@@ -165,6 +183,7 @@ class PacketHooker implements Listener {
 			foreach ($indexes as $k => $v) {
 				++$indexes[$k];
 				$lim = count($input[$k]);
+
 				if ($indexes[$k] >= $lim) {
 					$indexes[$k] = 0;
 					continue;

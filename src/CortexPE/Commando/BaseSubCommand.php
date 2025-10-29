@@ -55,12 +55,12 @@ abstract class BaseSubCommand extends BaseCommand {
 	}
 
 	public function getUsage() : string {
-		if (empty($this->usageMessage)) {
+		if ($this->usageMessage === '') {
 			$parent = $this->parent;
 			$parentNames = '';
 
 			while ($parent instanceof self) {
-				$parentNames = $parent->getName() . $parentNames;
+				$parentNames = $parent->getName() . ' ' . $parentNames;
 				$parent = $parent->getParent();
 			}
 
