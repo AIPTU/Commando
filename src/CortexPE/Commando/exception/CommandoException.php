@@ -1,6 +1,6 @@
 <?php
 
-/***
+/*
  *    ___                                          _
  *   / __\___  _ __ ___  _ __ ___   __ _ _ __   __| | ___
  *  / /  / _ \| '_ ` _ \| '_ ` _ \ / _` | '_ \ / _` |/ _ \
@@ -31,6 +31,4 @@ namespace CortexPE\Commando\exception;
 
 use Exception;
 
-class CommandoException extends Exception {
-
-}
+class CommandoException extends Exception {}

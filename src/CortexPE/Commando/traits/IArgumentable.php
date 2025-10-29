@@ -1,6 +1,6 @@
 <?php
 
-/***
+/*
  *    ___                                          _
  *   / __\___  _ __ ___  _ __ ___   __ _ _ __   __| | ___
  *  / /  / _ \| '_ ` _ \| '_ ` _ \ / _` | '_ \ / _` |/ _ \
@@ -33,13 +33,16 @@ use CortexPE\Commando\args\BaseArgument;
 use pocketmine\command\CommandSender;
 
 interface IArgumentable {
-	public function generateUsageMessage(string $parent = "") : string;
+	public function generateUsageMessage(string $parent = '') : string;
+
 	public function hasArguments() : bool;
 
 	/**
-	 * @return BaseArgument[][]
+	 * @return array<array<BaseArgument>>
 	 */
 	public function getArgumentList() : array;
+
 	public function parseArguments(array $rawArgs, CommandSender $sender) : array;
+
 	public function registerArgument(int $position, BaseArgument $argument) : void;
 }

@@ -1,6 +1,6 @@
 <?php
 
-/***
+/*
  *    ___                                          _
  *   / __\___  _ __ ___  _ __ ___   __ _ _ __   __| | ___
  *  / /  / _ \| '_ ` _ \| '_ ` _ \ / _` | '_ \ / _` |/ _ \
@@ -39,13 +39,14 @@ class TextArgument extends RawStringArgument {
 	}
 
 	public function getTypeName() : string {
-		return "text";
+		return 'text';
 	}
 
 	public function getSpanLength() : int {
 		return PHP_INT_MAX;
 	}
+
 	public function canParse(string $testString, CommandSender $sender) : bool {
-		return $testString !== "";
+		return $testString !== '';
 	}
 }

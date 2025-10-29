@@ -1,6 +1,6 @@
 <?php
 
-/***
+/*
  *    ___                                          _
  *   / __\___  _ __ ___  _ __ ___   __ _ _ __   __| | ___
  *  / /  / _ \| '_ ` _ \| '_ ` _ \ / _` | '_ \ / _` |/ _ \
@@ -44,7 +44,7 @@ abstract class StringEnumArgument extends BaseArgument {
 	public function __construct(string $name, bool $optional = false) {
 		parent::__construct($name, $optional);
 
-		$this->parameterData = CommandParameter::enum($name, new CommandHardEnum("", $this->getEnumValues()), 0, $optional);
+		$this->parameterData = CommandParameter::enum($name, new CommandHardEnum('', $this->getEnumValues()), 0, $optional);
 	}
 
 	public function getNetworkType() : int {
@@ -54,7 +54,7 @@ abstract class StringEnumArgument extends BaseArgument {
 
 	public function canParse(string $testString, CommandSender $sender) : bool {
 		return (bool) preg_match(
-			"/^(" . implode("|", array_map("\\strtolower", $this->getEnumValues())) . ")$/iu",
+			'/^(' . implode('|', array_map('\\strtolower', $this->getEnumValues())) . ')$/iu',
 			$testString
 		);
 	}

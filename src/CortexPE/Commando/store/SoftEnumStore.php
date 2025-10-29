@@ -11,7 +11,7 @@ use pocketmine\network\mcpe\protocol\UpdateSoftEnumPacket;
 use pocketmine\Server;
 
 class SoftEnumStore {
-	/** @var CommandSoftEnum[] */
+	/** @var array<CommandSoftEnum> */
 	private static array $enums = [];
 
 	public static function getEnumByName(string $name) : ?CommandSoftEnum {
@@ -19,7 +19,7 @@ class SoftEnumStore {
 	}
 
 	/**
-	 * @return CommandSoftEnum[]
+	 * @return array<CommandSoftEnum>
 	 */
 	public static function getEnums() : array {
 		return static::$enums;
@@ -31,17 +31,19 @@ class SoftEnumStore {
 	}
 
 	public static function updateEnum(string $enumName, array $values) : void {
-		if(self::getEnumByName($enumName) === null){
-			throw new CommandoException("Unknown enum named " . $enumName);
+		if (self::getEnumByName($enumName) === null) {
+			throw new CommandoException('Unknown enum named ' . $enumName);
 		}
+
 		$enum = self::$enums[$enumName] = new CommandSoftEnum($enumName, $values);
 		self::broadcastSoftEnum($enum, UpdateSoftEnumPacket::TYPE_SET);
 	}
 
 	public static function removeEnum(string $enumName) : void {
-		if(($enum = self::getEnumByName($enumName)) === null){
-			throw new CommandoException("Unknown enum named " . $enumName);
+		if (($enum = self::getEnumByName($enumName)) === null) {
+			throw new CommandoException('Unknown enum named ' . $enumName);
 		}
+
 		unset(static::$enums[$enumName]);
 		self::broadcastSoftEnum($enum, UpdateSoftEnumPacket::TYPE_REMOVE);
 	}

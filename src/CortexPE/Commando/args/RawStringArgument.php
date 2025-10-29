@@ -1,6 +1,6 @@
 <?php
 
-/***
+/*
  *    ___                                          _
  *   / __\___  _ __ ___  _ __ ___   __ _ _ __   __| | ___
  *  / /  / _ \| '_ ` _ \| '_ ` _ \ / _` | '_ \ / _` |/ _ \
@@ -38,14 +38,14 @@ class RawStringArgument extends BaseArgument {
 	}
 
 	public function getTypeName() : string {
-		return "string";
+		return 'string';
 	}
 
 	public function canParse(string $testString, CommandSender $sender) : bool {
 		return true;
 	}
 
-	public function parse(string $argument, CommandSender $sender) : string{
+	public function parse(string $argument, CommandSender $sender) : string {
 		return $argument;
 	}
 }

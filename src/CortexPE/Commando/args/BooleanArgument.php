@@ -1,6 +1,6 @@
 <?php
 
-/***
+/*
  *    ___                                          _
  *   / __\___  _ __ ___  _ __ ___   __ _ _ __   __| | ___
  *  / /  / _ \| '_ ` _ \| '_ ` _ \ / _` | '_ \ / _` |/ _ \
@@ -32,21 +32,20 @@ namespace CortexPE\Commando\args;
 use pocketmine\command\CommandSender;
 
 class BooleanArgument extends StringEnumArgument {
-
 	protected const VALUES = [
-		"true" => true,
-		"false" => false,
+		'true' => true,
+		'false' => false,
 	];
 
 	public function getTypeName() : string {
-		return "bool";
+		return 'bool';
 	}
 
 	public function getEnumName() : string {
-		return "bool";
+		return 'bool';
 	}
 
-	public function parse(string $argument, CommandSender $sender) : bool{
+	public function parse(string $argument, CommandSender $sender) : bool {
 		return (bool) $this->getValue($argument);
 	}
 }

@@ -1,6 +1,6 @@
 <?php
 
-/***
+/*
  *    ___                                          _
  *   / __\___  _ __ ___  _ __ ___   __ _ _ __   __| | ___
  *  / /  / _ \| '_ ` _ \| '_ ` _ \ / _` | '_ \ / _` |/ _ \
@@ -34,13 +34,13 @@ use pocketmine\plugin\PluginBase;
 use function count;
 use function trim;
 
-abstract class BaseSubCommand extends BaseCommand{
+abstract class BaseSubCommand extends BaseCommand {
 	protected BaseCommand $parent;
 
-	public function __construct(PluginBase $plugin, string $name, string $description = "", array $aliases = []){
+	public function __construct(PluginBase $plugin, string $name, string $description = '', array $aliases = []) {
 		parent::__construct($plugin, $name, $description, $aliases);
 
-		$this->usageMessage = "";
+		$this->usageMessage = '';
 	}
 
 	public function getParent() : BaseCommand {
@@ -54,18 +54,18 @@ abstract class BaseSubCommand extends BaseCommand{
 		$this->parent = $parent;
 	}
 
-	public function getUsage() : string{
-		if(empty($this->usageMessage)){
+	public function getUsage() : string {
+		if (empty($this->usageMessage)) {
 			$parent = $this->parent;
-			$parentNames = "";
+			$parentNames = '';
 
-			while($parent instanceof BaseSubCommand) {
+			while ($parent instanceof self) {
 				$parentNames = $parent->getName() . $parentNames;
 				$parent = $parent->getParent();
 			}
 
-			if($parent instanceof BaseCommand){
-				$parentNames = $parent->getName() . " " . $parentNames;
+			if ($parent instanceof BaseCommand) {
+				$parentNames = $parent->getName() . ' ' . $parentNames;
 			}
 
 			$this->usageMessage = $this->generateUsageMessage(trim($parentNames));
@@ -75,9 +75,10 @@ abstract class BaseSubCommand extends BaseCommand{
 	}
 
 	public function testPermissionSilent(CommandSender $sender, ?string $permission = null) : bool {
-		if($permission === null && count($this->getPermissions()) === 0) {
+		if ($permission === null && count($this->getPermissions()) === 0) {
 			return true;
 		}
+
 		return parent::testPermissionSilent($sender, $permission);
 	}
 }

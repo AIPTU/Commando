@@ -1,6 +1,6 @@
 <?php
 
-/***
+/*
  *    ___                                          _
  *   / __\___  _ __ ___  _ __ ___   __ _ _ __   __| | ___
  *  / /  / _ \| '_ ` _ \| '_ ` _ \ / _` | '_ \ / _` |/ _ \
@@ -29,6 +29,4 @@ declare(strict_types=1);
 
 namespace CortexPE\Commando\exception;
 
-class ArgumentOrderException extends CommandoException {
-
-}
+class ArgumentOrderException extends CommandoException {}

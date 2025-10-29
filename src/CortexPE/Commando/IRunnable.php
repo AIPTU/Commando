@@ -1,6 +1,6 @@
 <?php
 
-/***
+/*
  *    ___                                          _
  *   / __\___  _ __ ___  _ __ ___   __ _ _ __   __| | ___
  *  / /  / _ \| '_ ` _ \| '_ ` _ \ / _` | '_ \ / _` |/ _ \
@@ -32,30 +32,28 @@ namespace CortexPE\Commando;
 use CortexPE\Commando\constraint\BaseConstraint;
 
 /**
- * Interface IRunnable
+ * Interface IRunnable.
  *
  * An interface which is declares the minimum required information
  * to get background information for a command and/or a sub-command
- *
- * @package CortexPE\Commando
  */
 interface IRunnable {
 	public function getName() : string;
 
 	/**
-	 * @return string[]
+	 * @return array<string>
 	 */
 	public function getAliases() : array;
 
 	public function getUsageMessage() : string;
 
 	/**
-	 * @return string[]
+	 * @return array<string>
 	 */
 	public function getPermissions() : array;
 
 	/**
-	 * @return BaseConstraint[]
+	 * @return array<BaseConstraint>
 	 */
 	public function getConstraints() : array;
 }

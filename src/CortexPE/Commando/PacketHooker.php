@@ -1,6 +1,6 @@
 <?php
 
-/***
+/*
  *    ___                                          _
  *   / __\___  _ __ ___  _ __ ___   __ _ _ __   __| | ___
  *  / /  / _ \| '_ ` _ \| '_ ` _ \ / _` | '_ \ / _` |/ _ \
@@ -59,28 +59,32 @@ class PacketHooker implements Listener {
 	}
 
 	public static function register(Plugin $registrant) : void {
-		if(self::$isRegistered) {
-			throw new HookAlreadyRegistered("Event listener is already registered by another plugin.");
+		if (self::$isRegistered) {
+			throw new HookAlreadyRegistered('Event listener is already registered by another plugin.');
 		}
 
 		$interceptor = SimplePacketHandler::createInterceptor($registrant, EventPriority::NORMAL, false);
-		$interceptor->interceptOutgoing(function(AvailableCommandsPacket $pk, NetworkSession $target) : bool{
-			if(self::$isIntercepting)return true;
+		$interceptor->interceptOutgoing(function (AvailableCommandsPacket $pk, NetworkSession $target) : bool {
+			if (self::$isIntercepting) {
+				return true;
+			}
+
 			$p = $target->getPlayer();
 			$disassembled = AvailableCommandsPacketDisassembler::disassemble($pk);
 			$commandDataList = $disassembled->commandData;
-			foreach($commandDataList as $commandData) {
+			foreach ($commandDataList as $commandData) {
 				$cmd = Server::getInstance()->getCommandMap()->getCommand($commandData->getName());
-				if($cmd instanceof BaseCommand) {
-					foreach($cmd->getConstraints() as $constraint){
-						if(!$constraint->isVisibleTo($p)){
+				if ($cmd instanceof BaseCommand) {
+					foreach ($cmd->getConstraints() as $constraint) {
+						if (!$constraint->isVisibleTo($p)) {
 							continue 2;
 						}
 					}
+
 					$commandData->overloads = self::generateOverloads($p, $cmd);
 				}
-
 			}
+
 			self::$isIntercepting = true;
 			$target->sendDataPacket(AvailableCommandsPacketAssembler::assemble($commandDataList, [], SoftEnumStore::getEnums()));
 			self::$isIntercepting = false;
@@ -91,17 +95,18 @@ class PacketHooker implements Listener {
 	}
 
 	/**
-	 * @return CommandOverload[][]
+	 * @return array<array<CommandOverload>>
 	 */
 	private static function generateOverloads(CommandSender $cs, BaseCommand $command) : array {
 		$overloads = [];
 
-		foreach($command->getSubCommands() as $label => $subCommand) {
-			if(!$subCommand->testPermissionSilent($cs) || $subCommand->getName() !== $label){ // hide aliases
+		foreach ($command->getSubCommands() as $label => $subCommand) {
+			if (!$subCommand->testPermissionSilent($cs) || $subCommand->getName() !== $label) { // hide aliases
 				continue;
 			}
-			foreach($subCommand->getConstraints() as $constraint){
-				if(!$constraint->isVisibleTo($cs)){
+
+			foreach ($subCommand->getConstraints() as $constraint) {
+				if (!$constraint->isVisibleTo($cs)) {
 					continue 2;
 				}
 			}
@@ -113,8 +118,8 @@ class PacketHooker implements Listener {
 				optional: false
 			);
 			$overloadList = self::generateOverloadList($subCommand);
-			if(!empty($overloadList)){
-				foreach($overloadList as $overload) {
+			if (!empty($overloadList)) {
+				foreach ($overloadList as $overload) {
 					$overloads[] = new CommandOverload(false, [$scParam, ...$overload->getParameters()]);
 				}
 			} else {
@@ -122,7 +127,7 @@ class PacketHooker implements Listener {
 			}
 		}
 
-		foreach(self::generateOverloadList($command) as $overload) {
+		foreach (self::generateOverloadList($command) as $overload) {
 			$overloads[] = $overload;
 		}
 
@@ -130,41 +135,44 @@ class PacketHooker implements Listener {
 	}
 
 	/**
-	 * @return CommandOverload[]
+	 * @return array<CommandOverload>
 	 */
 	private static function generateOverloadList(IArgumentable $argumentable) : array {
 		$input = $argumentable->getArgumentList();
 		$combinations = [];
-		$outputLength = array_product(array_map("count", $input));
+		$outputLength = array_product(array_map('count', $input));
 		$indexes = [];
-		foreach($input as $k => $charList){
+		foreach ($input as $k => $charList) {
 			$indexes[$k] = 0;
 		}
+
 		do {
-			/** @var CommandParameter[] $set */
+			/** @var array<CommandParameter> $set */
 			$set = [];
-			foreach($indexes as $k => $index){
+			foreach ($indexes as $k => $index) {
 				$param = $set[$k] = clone $input[$k][$index]->getNetworkParameterData();
 
-				if(isset($param->enum) && $param->enum instanceof CommandHardEnum){
+				if (isset($param->enum) && $param->enum instanceof CommandHardEnum) {
 					$param->enum = new CommandHardEnum(
-						"enum#" . spl_object_id($param->enum),
+						'enum#' . spl_object_id($param->enum),
 						$param->enum->getValues()
 					);
 				}
 			}
+
 			$combinations[] = new CommandOverload(false, $set);
 
-			foreach($indexes as $k => $v){
-				$indexes[$k]++;
+			foreach ($indexes as $k => $v) {
+				++$indexes[$k];
 				$lim = count($input[$k]);
-				if($indexes[$k] >= $lim){
+				if ($indexes[$k] >= $lim) {
 					$indexes[$k] = 0;
 					continue;
 				}
+
 				break;
 			}
-		} while(count($combinations) !== $outputLength);
+		} while (count($combinations) !== $outputLength);
 
 		return $combinations;
 	}
