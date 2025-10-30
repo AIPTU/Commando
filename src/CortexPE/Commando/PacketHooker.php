@@ -47,6 +47,7 @@ use pocketmine\plugin\Plugin;
 use pocketmine\Server;
 use function array_map;
 use function array_product;
+use function array_values;
 use function count;
 use function spl_object_id;
 
@@ -70,6 +71,10 @@ class PacketHooker implements Listener {
 			}
 
 			$p = $target->getPlayer();
+			if ($p === null) {
+				return true;
+			}
+
 			$disassembled = AvailableCommandsPacketDisassembler::disassemble($pk);
 			$commandDataList = $disassembled->commandData;
 
@@ -92,7 +97,7 @@ class PacketHooker implements Listener {
 			}
 
 			self::$isIntercepting = true;
-			$target->sendDataPacket(AvailableCommandsPacketAssembler::assemble($commandDataList, [], SoftEnumStore::getEnums()));
+			$target->sendDataPacket(AvailableCommandsPacketAssembler::assemble($commandDataList, [], array_values(SoftEnumStore::getEnums())));
 			self::$isIntercepting = false;
 			return false;
 		});
