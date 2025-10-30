@@ -34,6 +34,7 @@ use pocketmine\network\mcpe\protocol\types\command\CommandHardEnum;
 use pocketmine\network\mcpe\protocol\types\command\CommandParameter;
 use function array_keys;
 use function array_map;
+use function array_values;
 use function implode;
 use function preg_match;
 use function strtolower;
@@ -44,7 +45,7 @@ abstract class StringEnumArgument extends BaseArgument {
 	public function __construct(string $name, bool $optional = false) {
 		parent::__construct($name, $optional);
 
-		$this->parameterData = CommandParameter::enum($name, new CommandHardEnum('', $this->getEnumValues()), 0, $optional);
+		$this->parameterData = CommandParameter::enum($name, new CommandHardEnum('', array_values($this->getEnumValues())), 0, $optional);
 	}
 
 	public function getNetworkType() : int {
@@ -59,10 +60,13 @@ abstract class StringEnumArgument extends BaseArgument {
 		);
 	}
 
-	public function getValue(string $string) {
+	public function getValue(string $string) : mixed {
 		return static::VALUES[strtolower($string)];
 	}
 
+	/**
+	 * @return list<string>
+	 */
 	public function getEnumValues() : array {
 		return array_keys(static::VALUES);
 	}

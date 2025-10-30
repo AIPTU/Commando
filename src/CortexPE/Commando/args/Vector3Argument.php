@@ -63,7 +63,7 @@ class Vector3Argument extends BaseArgument {
 	}
 
 	public function isValidCoordinate(string $coordinate, bool $locatable) : bool {
-		return (bool) preg_match('/^(?:' . ($locatable ? '(\\?:~-|~\\+)?' : '') . '-?(?:\\d+|\\d*\\.\\d+))' . ($locatable ? '|~' : '') . '$/', $coordinate);
+		return preg_match('/^(?:' . ($locatable ? '(\\?:~-|~\\+)?' : '') . '-?(?:\\d+|\\d*\\.\\d+))' . ($locatable ? '|~' : '') . '$/', $coordinate) === 1;
 	}
 
 	public function parse(string $argument, CommandSender $sender) : Vector3 {
@@ -72,7 +72,7 @@ class Vector3Argument extends BaseArgument {
 		foreach ($coords as $k => $coord) {
 			$offset = 0;
 			// if it's locatable and starts with ~- or ~+
-			if ($sender instanceof Entity && preg_match('/^(?:~-|~\\+)|~/', $coord)) {
+			if ($sender instanceof Entity && preg_match('/^(?:~-|~\\+)|~/', $coord) === 1) {
 				// this will work with -n, +n and "" due to typecast later
 				$offset = substr($coord, 1);
 
@@ -82,6 +82,7 @@ class Vector3Argument extends BaseArgument {
 					0 => $position->x,
 					1 => $position->y,
 					2 => $position->z,
+					default => 0.0,
 				};
 			}
 
