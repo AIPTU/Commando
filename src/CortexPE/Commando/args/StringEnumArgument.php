@@ -40,6 +40,7 @@ use function preg_match;
 use function strtolower;
 
 abstract class StringEnumArgument extends BaseArgument {
+	/** @var array<string, mixed> */
 	protected const VALUES = [];
 
 	public function __construct(string $name, bool $optional = false) {

@@ -5,28 +5,30 @@ declare(strict_types=1);
 namespace CortexPE\Commando\store;
 
 use CortexPE\Commando\exception\CommandoException;
+use pocketmine\network\mcpe\NetworkBroadcastUtils;
 use pocketmine\network\mcpe\protocol\ClientboundPacket;
 use pocketmine\network\mcpe\protocol\types\command\CommandSoftEnum;
 use pocketmine\network\mcpe\protocol\UpdateSoftEnumPacket;
 use pocketmine\Server;
+use function array_values;
 
 class SoftEnumStore {
-	/** @var array<CommandSoftEnum> */
+	/** @var array<string, CommandSoftEnum> */
 	private static array $enums = [];
 
 	public static function getEnumByName(string $name) : ?CommandSoftEnum {
-		return static::$enums[$name] ?? null;
+		return self::$enums[$name] ?? null;
 	}
 
 	/**
-	 * @return array<CommandSoftEnum>
+	 * @return array<string, CommandSoftEnum>
 	 */
 	public static function getEnums() : array {
-		return static::$enums;
+		return self::$enums;
 	}
 
 	public static function addEnum(CommandSoftEnum $enum) : void {
-		static::$enums[$enum->getName()] = $enum;
+		self::$enums[$enum->getName()] = $enum;
 		self::broadcastSoftEnum($enum, UpdateSoftEnumPacket::TYPE_ADD);
 	}
 
@@ -35,7 +37,7 @@ class SoftEnumStore {
 			throw new CommandoException('Unknown enum named ' . $enumName);
 		}
 
-		$enum = self::$enums[$enumName] = new CommandSoftEnum($enumName, $values);
+		$enum = self::$enums[$enumName] = new CommandSoftEnum($enumName, array_values($values));
 		self::broadcastSoftEnum($enum, UpdateSoftEnumPacket::TYPE_SET);
 	}
 
@@ -44,7 +46,7 @@ class SoftEnumStore {
 			throw new CommandoException('Unknown enum named ' . $enumName);
 		}
 
-		unset(static::$enums[$enumName]);
+		unset(self::$enums[$enumName]);
 		self::broadcastSoftEnum($enum, UpdateSoftEnumPacket::TYPE_REMOVE);
 	}
 
@@ -57,6 +59,7 @@ class SoftEnumStore {
 	}
 
 	private static function broadcastPacket(ClientboundPacket $pk) : void {
-		($sv = Server::getInstance())->broadcastPackets($sv->getOnlinePlayers(), [$pk]);
+		$sv = Server::getInstance();
+		NetworkBroadcastUtils::broadcastPackets($sv->getOnlinePlayers(), [$pk]);
 	}
 }
