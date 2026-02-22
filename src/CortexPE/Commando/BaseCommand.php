@@ -45,16 +45,17 @@ use function array_unique;
 use function array_unshift;
 use function count;
 use function dechex;
+use function is_scalar;
 use function str_replace;
 
 abstract class BaseCommand extends Command implements IArgumentable, IRunnable, PluginOwned {
 	use ArgumentableTrait;
 
-	public const ERR_INVALID_ARG_VALUE = 0x01;
-	public const ERR_TOO_MANY_ARGUMENTS = 0x02;
-	public const ERR_INSUFFICIENT_ARGUMENTS = 0x03;
-	public const ERR_NO_ARGUMENTS = 0x04;
-	public const ERR_INVALID_ARGUMENTS = 0x05;
+	public const int ERR_INVALID_ARG_VALUE = 0x01;
+	public const int ERR_TOO_MANY_ARGUMENTS = 0x02;
+	public const int ERR_INSUFFICIENT_ARGUMENTS = 0x03;
+	public const int ERR_NO_ARGUMENTS = 0x04;
+	public const int ERR_INVALID_ARGUMENTS = 0x05;
 
 	/** @var array<int, string> */
 	protected array $errorMessages = [
@@ -99,7 +100,6 @@ abstract class BaseCommand extends Command implements IArgumentable, IRunnable, 
 			return;
 		}
 
-		/** @var BaseCommand|BaseSubCommand $cmd */
 		$cmd = $this;
 		$passArgs = [];
 		$argsCount = count($args);
@@ -133,10 +133,7 @@ abstract class BaseCommand extends Command implements IArgumentable, IRunnable, 
 		}
 	}
 
-	/**
-	 * @param ArgumentableTrait $ctx
-	 */
-	private function attemptArgumentParsing($ctx, array $args) : ?array {
+	private function attemptArgumentParsing(self $ctx, array $args) : ?array {
 		$dat = $ctx->parseArguments($args, $this->currentSender);
 		$errors = $dat['errors'];
 
@@ -151,18 +148,25 @@ abstract class BaseCommand extends Command implements IArgumentable, IRunnable, 
 		return $dat['arguments'];
 	}
 
+	/**
+	 * @param array<string, mixed> $args
+	 */
 	abstract public function onRun(CommandSender $sender, string $aliasUsed, array $args) : void;
 
 	protected function sendUsage() : void {
-		$this->currentSender->sendMessage(TextFormat::RED . 'Usage: ' . $this->getUsage());
+		$usage = $this->getUsage();
+		$this->currentSender->sendMessage(TextFormat::RED . 'Usage: ' . ($usage instanceof Translatable ? $usage->getText() : $usage));
 	}
 
+	/**
+	 * @param array<string, mixed> $args
+	 */
 	public function sendError(int $errorCode, array $args = []) : void {
 		$str = $this->errorMessages[$errorCode];
 
 		if (count($args) > 0) {
 			foreach ($args as $item => $value) {
-				$str = str_replace('{' . $item . '}', (string) $value, $str);
+				$str = str_replace('{' . $item . '}', is_scalar($value) || $value instanceof \Stringable ? (string) $value : '', $str);
 			}
 		}
 
@@ -178,6 +182,9 @@ abstract class BaseCommand extends Command implements IArgumentable, IRunnable, 
 		$this->errorMessages[$errorCode] = $format;
 	}
 
+	/**
+	 * @param array<int, string> $errorFormats
+	 */
 	public function setErrorFormats(array $errorFormats) : void {
 		foreach ($errorFormats as $errorCode => $format) {
 			$this->setErrorFormat($errorCode, $format);
@@ -218,7 +225,8 @@ abstract class BaseCommand extends Command implements IArgumentable, IRunnable, 
 	}
 
 	public function getUsageMessage() : string {
-		return $this->getUsage();
+		$usage = $this->getUsage();
+		return $usage instanceof Translatable ? $usage->getText() : $usage;
 	}
 
 	public function setCurrentSender(CommandSender $sender) : void {

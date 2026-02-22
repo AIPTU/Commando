@@ -51,7 +51,7 @@ class Vector3Argument extends BaseArgument {
 		$coords = explode(' ', $testString);
 		if (count($coords) === 3) {
 			foreach ($coords as $coord) {
-				if (!$this->isValidCoordinate($coord, $sender instanceof Vector3)) {
+				if (!$this->isValidCoordinate($coord, $sender instanceof Entity)) {
 					return false;
 				}
 			}
@@ -63,7 +63,7 @@ class Vector3Argument extends BaseArgument {
 	}
 
 	public function isValidCoordinate(string $coordinate, bool $locatable) : bool {
-		return preg_match('/^(?:' . ($locatable ? '(\\?:~-|~\\+)?' : '') . '-?(?:\\d+|\\d*\\.\\d+))' . ($locatable ? '|~' : '') . '$/', $coordinate) === 1;
+		return preg_match('/^(?:' . ($locatable ? '(?:~-|~\+)?' : '') . '-?(?:\d+|\d*\.\d+))' . ($locatable ? '|~' : '') . '$/', $coordinate) === 1;
 	}
 
 	public function parse(string $argument, CommandSender $sender) : Vector3 {
@@ -72,11 +72,10 @@ class Vector3Argument extends BaseArgument {
 		foreach ($coords as $k => $coord) {
 			$offset = 0;
 			// if it's locatable and starts with ~- or ~+
-			if ($sender instanceof Entity && preg_match('/^(?:~-|~\\+)|~/', $coord) === 1) {
-				// this will work with -n, +n and "" due to typecast later
-				$offset = substr($coord, 1);
+			if ($sender instanceof Entity && preg_match('/^(?:~-|~\+)|~/', $coord) === 1) {
+				$offsetStr = substr($coord, 1);
+				$offset = $offsetStr !== '' ? (float) $offsetStr : 0.0;
 
-				// replace base coordinate with actual entity coordinates
 				$position = $sender->getPosition();
 				$coord = match ($k) {
 					0 => $position->x,

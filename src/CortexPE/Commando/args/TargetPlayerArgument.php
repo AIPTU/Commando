@@ -9,11 +9,9 @@ use pocketmine\network\mcpe\protocol\AvailableCommandsPacket;
 use function preg_match;
 use function strtolower;
 
-class TargetPlayerArgument extends BaseArgument {
+final class TargetPlayerArgument extends BaseArgument {
 	public function __construct(bool $optional = false, ?string $name = null) {
-		$name = $name === null ? 'player' : $name;
-
-		parent::__construct($name, $optional);
+		parent::__construct($name ?? 'player', $optional);
 	}
 
 	public function getTypeName() : string {

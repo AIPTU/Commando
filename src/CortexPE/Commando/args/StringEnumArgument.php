@@ -41,12 +41,12 @@ use function strtolower;
 
 abstract class StringEnumArgument extends BaseArgument {
 	/** @var array<string, mixed> */
-	protected const VALUES = [];
+	protected const array VALUES = [];
 
 	public function __construct(string $name, bool $optional = false) {
 		parent::__construct($name, $optional);
 
-		$this->parameterData = CommandParameter::enum($name, new CommandHardEnum('', array_values($this->getEnumValues())), 0, $optional);
+		$this->parameterData = CommandParameter::enum($name, new CommandHardEnum($this->getEnumName(), array_values($this->getEnumValues())), 0, $optional);
 	}
 
 	public function getNetworkType() : int {
@@ -71,4 +71,9 @@ abstract class StringEnumArgument extends BaseArgument {
 	public function getEnumValues() : array {
 		return array_keys(static::VALUES);
 	}
+
+	/**
+	 * Returns the name for the hard enum sent to the client.
+	 */
+	abstract public function getEnumName() : string;
 }

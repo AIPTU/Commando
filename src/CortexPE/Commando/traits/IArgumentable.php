@@ -42,6 +42,9 @@ interface IArgumentable {
 	 */
 	public function getArgumentList() : array;
 
+	/**
+	 * @param array<string> $rawArgs
+	 */
 	public function parseArguments(array $rawArgs, CommandSender $sender) : array;
 
 	public function registerArgument(int $position, BaseArgument $argument) : void;

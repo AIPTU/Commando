@@ -33,16 +33,12 @@ use CortexPE\Commando\IRunnable;
 use pocketmine\command\CommandSender;
 
 abstract class BaseConstraint {
-	protected IRunnable $context;
-
 	/**
-	 * BaseConstraint constructor.
-	 *
-	 * "Context" is required so that this new-constraint-system doesn't hinder getting command info
+	 * "Context" is required so that this new-constraint-system doesn't hinder getting command info.
 	 */
-	public function __construct(IRunnable $context) {
-		$this->context = $context;
-	}
+	public function __construct(
+		protected readonly IRunnable $context,
+	) {}
 
 	public function getContext() : IRunnable {
 		return $this->context;

@@ -34,12 +34,13 @@ use CortexPE\Commando\args\TextArgument;
 use CortexPE\Commando\BaseCommand;
 use CortexPE\Commando\exception\ArgumentOrderException;
 use pocketmine\command\CommandSender;
+use pocketmine\lang\Translatable;
 use pocketmine\utils\TextFormat;
+use function array_map;
 use function array_slice;
 use function count;
 use function implode;
 use function is_array;
-use function rtrim;
 use function trim;
 use function usort;
 use const PHP_INT_MAX;
@@ -84,6 +85,11 @@ trait ArgumentableTrait {
 		}
 	}
 
+	/**
+	 * @param array<string> $rawArgs
+	 *
+	 * @return array{arguments: array<string, mixed>, errors: list<array{code: int, data: array<string, mixed>}>}
+	 */
 	public function parseArguments(array $rawArgs, CommandSender $sender) : array {
 		$return = [
 			'arguments' => [],
@@ -109,7 +115,7 @@ trait ArgumentableTrait {
 				// Sort: unlimited span arguments go last
 				usort(
 					$possibleArguments,
-					static fn (BaseArgument $a) : int => $a->getSpanLength() === PHP_INT_MAX ? 1 : -1
+					static fn (BaseArgument $a, BaseArgument $b) : int => ($a->getSpanLength() === PHP_INT_MAX ? 1 : 0) <=> ($b->getSpanLength() === PHP_INT_MAX ? 1 : 0)
 				);
 
 				$parsed = false;
@@ -156,18 +162,17 @@ trait ArgumentableTrait {
 				// Check if parsing failed and argument is not optional or empty
 				if (!$parsed && !($optional && $arg === '')) {
 					$expectedArgs = $this->argumentList[$argOffset];
-					$expected = '';
-
-					foreach ($expectedArgs as $expectedArg) {
-						$expected .= $expectedArg->getTypeName() . '|';
-					}
+					$expected = implode('|', array_map(
+						static fn (BaseArgument $arg) : string => $arg->getTypeName(),
+						$expectedArgs,
+					));
 
 					$return['errors'][] = [
 						'code' => BaseCommand::ERR_INVALID_ARG_VALUE,
 						'data' => [
 							'value' => $rawArgs[$offset] ?? '',
 							'position' => $pos + 1,
-							'expected' => rtrim($expected, '|'),
+							'expected' => $expected,
 						],
 					];
 
@@ -195,7 +200,8 @@ trait ArgumentableTrait {
 		// Handle combined error case
 		$errorCount = count($return['errors']);
 		if (
-			$errorCount === 2
+			$errorCount >= 2
+			&& isset($return['errors'][0], $return['errors'][1])
 			&& $return['errors'][0]['code'] === BaseCommand::ERR_NO_ARGUMENTS
 			&& $return['errors'][1]['code'] === BaseCommand::ERR_TOO_MANY_ARGUMENTS
 		) {
@@ -229,7 +235,8 @@ trait ArgumentableTrait {
 		}
 
 		$argsStr = count($args) > 0 ? ' ' . implode(TextFormat::RED . ' ', $args) : '';
-		$msg .= $argsStr . ': ' . $this->getDescription();
+		$description = $this->getDescription();
+		$msg .= $argsStr . ': ' . ($description instanceof Translatable ? $description->getText() : $description);
 
 		foreach ($this->subCommands as $label => $subCommand) {
 			if ($label === $subCommand->getName()) {

@@ -33,7 +33,7 @@ use pocketmine\command\CommandSender;
 use pocketmine\math\Vector3;
 use function preg_match;
 
-class BlockPositionArgument extends Vector3Argument {
+final class BlockPositionArgument extends Vector3Argument {
 	public function isValidCoordinate(string $coordinate, bool $locatable) : bool {
 		return (bool) preg_match('/^(?:' . ($locatable ? '(?:~-|~\\+)?' : '') . '-?\\d+)' . ($locatable ? '|~' : '') . '$/', $coordinate);
 	}

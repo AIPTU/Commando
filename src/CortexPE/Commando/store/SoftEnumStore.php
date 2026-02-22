@@ -12,9 +12,11 @@ use pocketmine\network\mcpe\protocol\UpdateSoftEnumPacket;
 use pocketmine\Server;
 use function array_values;
 
-class SoftEnumStore {
+final class SoftEnumStore {
 	/** @var array<string, CommandSoftEnum> */
 	private static array $enums = [];
+
+	private function __construct() {}
 
 	public static function getEnumByName(string $name) : ?CommandSoftEnum {
 		return self::$enums[$name] ?? null;
@@ -32,6 +34,9 @@ class SoftEnumStore {
 		self::broadcastSoftEnum($enum, UpdateSoftEnumPacket::TYPE_ADD);
 	}
 
+	/**
+	 * @param list<string> $values
+	 */
 	public static function updateEnum(string $enumName, array $values) : void {
 		if (self::getEnumByName($enumName) === null) {
 			throw new CommandoException('Unknown enum named ' . $enumName);

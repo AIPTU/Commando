@@ -33,7 +33,7 @@ use pocketmine\command\CommandSender;
 use pocketmine\network\mcpe\protocol\AvailableCommandsPacket;
 use function preg_match;
 
-class FloatArgument extends BaseArgument {
+final class FloatArgument extends BaseArgument {
 	public function getNetworkType() : int {
 		return AvailableCommandsPacket::ARG_TYPE_FLOAT;
 	}

@@ -51,7 +51,7 @@ use function array_values;
 use function count;
 use function spl_object_id;
 
-class PacketHooker implements Listener {
+final class PacketHooker implements Listener {
 	private static bool $isRegistered = false;
 	private static bool $isIntercepting = false;
 
@@ -96,9 +96,13 @@ class PacketHooker implements Listener {
 				$commandData->overloads = self::generateOverloads($p, $cmd);
 			}
 
-			self::$isIntercepting = true;
-			$target->sendDataPacket(AvailableCommandsPacketAssembler::assemble($commandDataList, [], array_values(SoftEnumStore::getEnums())));
-			self::$isIntercepting = false;
+			try {
+				self::$isIntercepting = true;
+				$target->sendDataPacket(AvailableCommandsPacketAssembler::assemble($commandDataList, [], array_values(SoftEnumStore::getEnums())));
+			} finally {
+				self::$isIntercepting = false;
+			}
+
 			return false;
 		});
 

@@ -30,6 +30,7 @@ declare(strict_types=1);
 namespace CortexPE\Commando;
 
 use pocketmine\command\CommandSender;
+use pocketmine\lang\Translatable;
 use pocketmine\plugin\PluginBase;
 use function count;
 use function trim;
@@ -56,22 +57,21 @@ abstract class BaseSubCommand extends BaseCommand {
 
 	public function getUsage() : string {
 		if ($this->usageMessage === '') {
-			$parent = $this->parent;
 			$parentNames = '';
+			$current = $this;
 
-			while ($parent instanceof self) {
-				$parentNames = $parent->getName() . ' ' . $parentNames;
-				$parent = $parent->getParent();
+			while ($current instanceof self) {
+				$parentNames = $current->getName() . ' ' . $parentNames;
+				$current = $current->getParent();
 			}
 
-			if ($parent instanceof BaseCommand) {
-				$parentNames = $parent->getName() . ' ' . $parentNames;
-			}
+			$parentNames = $current->getName() . ' ' . $parentNames;
 
 			$this->usageMessage = $this->generateUsageMessage(trim($parentNames));
 		}
 
-		return $this->usageMessage;
+		$usage = parent::getUsage();
+		return $usage instanceof Translatable ? $usage->getText() : $usage;
 	}
 
 	public function testPermissionSilent(CommandSender $sender, ?string $permission = null) : bool {
