@@ -148,9 +148,6 @@ abstract class BaseCommand extends Command implements IArgumentable, IRunnable, 
 		return $dat['arguments'];
 	}
 
-	/**
-	 * @param array<string, mixed> $args
-	 */
 	abstract public function onRun(CommandSender $sender, string $aliasUsed, array $args) : void;
 
 	protected function sendUsage() : void {
