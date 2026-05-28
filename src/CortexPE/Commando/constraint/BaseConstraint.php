@@ -36,9 +36,7 @@ abstract class BaseConstraint {
 	/**
 	 * "Context" is required so that this new-constraint-system doesn't hinder getting command info.
 	 */
-	public function __construct(
-		protected readonly IRunnable $context,
-	) {}
+	public function __construct(protected readonly IRunnable $context) {}
 
 	public function getContext() : IRunnable {
 		return $this->context;
